@@ -153,13 +153,177 @@
           <span class="bullet">✓</span> Text Preprocessed
         </div>
         <div class="pipeline-item ready">
-          <span class="pulse-bullet"></span> Ready for Keyword Extraction
+          <span class="pulse-bullet"></span> Ready for Concept Discovery
         </div>
       </div>
       
       <div class="btn-group">
-        <button class="btn-primary btn-analyze" [disabled]="true">
-          Extract Keywords →
+        <button class="btn-primary btn-analyze" (click)="extractConcepts()">
+          Discover Study Concepts →
+        </button>
+        <button class="btn-secondary" (click)="resetUpload()">
+          Upload Different File
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- EXTRACTING CONCEPTS STATE: Loading spinner with friendly status messages -->
+  @if (processingState() === 'extracting-concepts') {
+    <div class="uploading-state">
+      <div class="spinner-container">
+        <div class="spinner"></div>
+      </div>
+      <p class="status-message">{{ nlpLoadingMessage() }}</p>
+      <span class="file-name sub-text">{{ documentData()?.originalFilename }}</span>
+    </div>
+  }
+
+  <!-- CONCEPTS DISCOVERED STATE: Study concept chips list, pipeline timeline, and summary target button -->
+  @if (processingState() === 'concepts-discovered') {
+    <div class="uploaded-state">
+      <div class="success-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="success-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+      </div>
+      <h3 class="success-title">Important Concepts Discovered</h3>
+      
+      <div class="success-details">
+        <div class="detail-row">
+          <span class="detail-label">File Name</span>
+          <span class="detail-value" [title]="documentData()?.originalFilename">{{ documentData()?.originalFilename }}</span>
+        </div>
+      </div>
+
+      <!-- Discovered Concepts Chips Grid -->
+      <div class="concepts-container">
+        <span class="concepts-label">Study Concepts Identified</span>
+        <div class="concepts-grid">
+          @for (concept of documentData()?.concepts; track concept.text) {
+            <div class="concept-chip" [title]="'Frequency: ' + concept.frequency + ' | Importance: ' + concept.importance">
+              <span class="concept-text">{{ concept.text }}</span>
+              <span class="concept-score">{{ concept.importance }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Processing Pipeline Progress Indicators -->
+      <div class="pipeline-section">
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Document Uploaded
+        </div>
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Text Extracted
+        </div>
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Text Preprocessed
+        </div>
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Important Concepts Identified
+        </div>
+        <div class="pipeline-item ready">
+          <span class="pulse-bullet"></span> Ready to Generate Study Summary
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn-primary btn-analyze" (click)="generateSummary()">
+          Generate Study Summary →
+        </button>
+        <button class="btn-secondary" (click)="resetUpload()">
+          Upload Different File
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- GENERATING SUMMARY STATE: Loading spinner with friendly status messages -->
+  @if (processingState() === 'generating-summary') {
+    <div class="uploading-state">
+      <div class="spinner-container">
+        <div class="spinner"></div>
+      </div>
+      <p class="status-message">{{ nlpLoadingMessage() }}</p>
+      <span class="file-name sub-text">{{ documentData()?.originalFilename }}</span>
+    </div>
+  }
+
+  <!-- SUMMARY GENERATED STATE: Progressive stacking showing concepts AND generated study summary revision notes -->
+  @if (processingState() === 'summary-generated') {
+    <div class="uploaded-state">
+      <div class="success-icon-container">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="success-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+      </div>
+      <h3 class="success-title">Study Summary Generated</h3>
+      
+      <div class="success-details">
+        <div class="detail-row">
+          <span class="detail-label">File Name</span>
+          <span class="detail-value" [title]="documentData()?.originalFilename">{{ documentData()?.originalFilename }}</span>
+        </div>
+      </div>
+
+      <!-- Progressive Stack 1: Discovered Concepts Chips Grid (preserved) -->
+      <div class="concepts-container">
+        <span class="concepts-label">Study Concepts Identified</span>
+        <div class="concepts-grid">
+          @for (concept of documentData()?.concepts; track concept.text) {
+            <div class="concept-chip" [title]="'Frequency: ' + concept.frequency + ' | Importance: ' + concept.importance">
+              <span class="concept-text">{{ concept.text }}</span>
+              <span class="concept-score">{{ concept.importance }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Progressive Stack 2: Study Summary Revision Card (overview box & key revision points) -->
+      <div class="summary-container">
+        <span class="summary-label">Study Summary</span>
+        
+        <div class="overview-box">
+          <span class="section-title">Overview</span>
+          <p class="overview-text">{{ documentData()?.summary?.overview }}</p>
+        </div>
+        
+        <div class="keypoints-box">
+          <span class="section-title">Key Revision Points</span>
+          <ul class="keypoints-list">
+            @for (point of documentData()?.summary?.keyPoints; track point) {
+              <li class="keypoint-item">{{ point }}</li>
+            }
+          </ul>
+        </div>
+      </div>
+
+      <!-- Processing Pipeline Progress Indicators -->
+      <div class="pipeline-section">
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Document Uploaded
+        </div>
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Text Extracted
+        </div>
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Text Preprocessed
+        </div>
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Important Concepts Identified
+        </div>
+        <div class="pipeline-item done">
+          <span class="bullet">✓</span> Study Summary Generated
+        </div>
+        <div class="pipeline-item ready">
+          <span class="pulse-bullet"></span> Ready to Generate Revision Cards
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn-primary btn-analyze" (click)="generateRevisionCardsPlaceholder()">
+          Generate Revision Cards →
         </button>
         <button class="btn-secondary" (click)="resetUpload()">
           Upload Different File
