@@ -1,0 +1,25 @@
+# Node.js
+node_modules/
+dist/
+.angular/
+
+# Python Virtual Environments & Packages
+backend/venv/
+backend/uploads/*
+!backend/uploads/.gitkeep
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# IDE and Editor configs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# OS Files
+Thumbs.db
+Desktop.ini
