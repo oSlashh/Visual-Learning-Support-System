@@ -44,5 +44,23 @@ export class PdfService {
       stored_filename: storedFilename
     });
   }
+
+  /**
+   * Identifies the most important concepts inside the document.
+   */
+  getConcepts(storedFilename: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/concepts`, {
+      stored_filename: storedFilename
+    });
+  }
+
+  /**
+   * Generates a revision summary from the document text and concepts.
+   */
+  getSummary(storedFilename: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/summary`, {
+      stored_filename: storedFilename
+    });
+  }
 }
 

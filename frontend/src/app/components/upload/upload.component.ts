@@ -10,7 +10,7 @@ import { DocumentData } from '../../models/document-data.interface';
 })
 export class UploadComponent {
   // Define processing lifecycle states
-  processingState = signal<'idle' | 'selected' | 'uploading' | 'uploaded' | 'preprocessing' | 'preprocessed' | 'error'>('idle');
+  processingState = signal<'idle' | 'selected' | 'uploading' | 'uploaded' | 'preprocessing' | 'preprocessed' | 'extracting-concepts' | 'concepts-discovered' | 'generating-summary' | 'summary-generated' | 'error'>('idle');
   selectedFile = signal<File | null>(null);
   errorMessage = signal<string>('');
 
@@ -190,6 +190,111 @@ export class UploadComponent {
         this.processingState.set('error');
       }
     });
+  }
+
+  /**
+   * Identifies the core study concepts and rankings in the document.
+   */
+  extractConcepts(): void {
+    const currentData = this.documentData();
+    if (!currentData || !currentData.storedFilename) return;
+
+    this.processingState.set('extracting-concepts');
+    this.nlpLoadingMessage.set('Generating study material...');
+
+    const loadingMessages = [
+      'Generating study material...',
+      'Identifying key definitions...',
+      'Discovering core concepts...'
+    ];
+    let msgIndex = 0;
+
+    const messageInterval = setInterval(() => {
+      msgIndex = (msgIndex + 1) % loadingMessages.length;
+      this.nlpLoadingMessage.set(loadingMessages[msgIndex]);
+    }, 1500);
+
+    this.pdfService.getConcepts(currentData.storedFilename).subscribe({
+      next: (response) => {
+        clearInterval(messageInterval);
+        if (response.status === 'success') {
+          const current = this.documentData();
+          if (current) {
+            this.documentData.set({
+              ...current,
+              concepts: response.concepts
+            });
+          }
+          this.processingState.set('concepts-discovered');
+        } else {
+          this.errorMessage.set(response.message || 'Failed to extract document concepts.');
+          this.processingState.set('error');
+        }
+      },
+      error: (err) => {
+        clearInterval(messageInterval);
+        console.error('Concept extraction failed:', err);
+        const serverError = err.error?.message || 'Concept extraction failed. Check connection.';
+        this.errorMessage.set(serverError);
+        this.processingState.set('error');
+      }
+    });
+  }
+
+  /**
+   * Generates a revision summary card from the processed document.
+   */
+  generateSummary(): void {
+    const currentData = this.documentData();
+    if (!currentData || !currentData.storedFilename) return;
+
+    this.processingState.set('generating-summary');
+    this.nlpLoadingMessage.set('Generating study material...');
+
+    const loadingMessages = [
+      'Generating study material...',
+      'Summarizing lecture points...',
+      'Finalizing study notes...'
+    ];
+    let msgIndex = 0;
+
+    const messageInterval = setInterval(() => {
+      msgIndex = (msgIndex + 1) % loadingMessages.length;
+      this.nlpLoadingMessage.set(loadingMessages[msgIndex]);
+    }, 1500);
+
+    this.pdfService.getSummary(currentData.storedFilename).subscribe({
+      next: (response) => {
+        clearInterval(messageInterval);
+        if (response.status === 'success') {
+          const current = this.documentData();
+          if (current) {
+            this.documentData.set({
+              ...current,
+              summary: response.summary
+            });
+          }
+          this.processingState.set('summary-generated');
+        } else {
+          this.errorMessage.set(response.message || 'Failed to generate study summary.');
+          this.processingState.set('error');
+        }
+      },
+      error: (err) => {
+        clearInterval(messageInterval);
+        console.error('Summary generation failed:', err);
+        const serverError = err.error?.message || 'Summary generation failed. Check connection.';
+        this.errorMessage.set(serverError);
+        this.processingState.set('error');
+      }
+    });
+  }
+
+  /**
+   * Placeholder to demo revision cards button clicks.
+   */
+  generateRevisionCardsPlaceholder(): void {
+    console.log('Generate Revision Cards button clicked. Lead to Phase 7.');
   }
 
   /**

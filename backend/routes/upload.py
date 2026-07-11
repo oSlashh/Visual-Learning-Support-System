@@ -170,5 +170,87 @@ def preprocess_pdf():
             "message": f"Failed to preprocess document: {str(e)}"
         }), 500
 
+@upload_bp.route('/concepts', methods=['POST'])
+def discover_document_concepts():
+    """
+    Identifies the most frequent academic terms/concepts inside the document,
+    ranks them by importance, caches results, and returns them to the client.
+    """
+    data = request.get_json()
+    if not data or 'stored_filename' not in data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'stored_filename' in the request payload."
+        }), 400
+        
+    stored_filename = data['stored_filename']
+    
+    try:
+        from modules.concept_extractor import discover_concepts
+        result = discover_concepts(stored_filename)
+        
+        return jsonify({
+            "status": "success",
+            "concepts": result["concepts"]
+        }), 200
+        
+    except FileNotFoundError as fnf_err:
+        return jsonify({
+            "status": "error",
+            "message": str(fnf_err)
+        }), 404
+    except ValueError as val_err:
+        return jsonify({
+            "status": "error",
+            "message": str(val_err)
+        }), 400
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to discover concepts: {str(e)}"
+        }), 500
+
+@upload_bp.route('/summary', methods=['POST'])
+def generate_document_summary():
+    """
+    Ranks document sentences based on concept density, generates an overview
+    and key points, caches them, and returns them to the client.
+    """
+    data = request.get_json()
+    if not data or 'stored_filename' not in data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'stored_filename' in the request payload."
+        }), 400
+        
+    stored_filename = data['stored_filename']
+    
+    try:
+        from modules.summary_generator import generate_summary
+        result = generate_summary(stored_filename)
+        
+        return jsonify({
+            "status": "success",
+            "summary": result["summary"]
+        }), 200
+        
+    except FileNotFoundError as fnf_err:
+        return jsonify({
+            "status": "error",
+            "message": str(fnf_err)
+        }), 404
+    except ValueError as val_err:
+        return jsonify({
+            "status": "error",
+            "message": str(val_err)
+        }), 400
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to generate summary: {str(e)}"
+        }), 500
+
+
+
 
 
