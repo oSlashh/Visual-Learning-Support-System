@@ -15,6 +15,11 @@ export class UploadComponent {
   storedFilename = signal<string>('');
   errorMessage = signal<string>('');
 
+  // Document extraction metrics signals
+  pageCount = signal<number | null>(null);
+  wordCount = signal<number | null>(null);
+  textPreview = signal<string>('');
+
   constructor(private pdfService: PdfService) {}
 
   /**
@@ -67,7 +72,7 @@ export class UploadComponent {
   }
 
   /**
-   * Triggers the multipart upload request to the Flask server.
+   * Triggers the file upload and sequential text extraction processing.
    */
   uploadFile(): void {
     const file = this.selectedFile();
@@ -75,12 +80,33 @@ export class UploadComponent {
 
     this.uploadStatus.set('uploading');
 
+    // 1. Submit file to Flask Upload endpoint
     this.pdfService.uploadPdf(file).subscribe({
       next: (response) => {
         if (response.status === 'success') {
           this.originalFilename.set(response.original_filename);
           this.storedFilename.set(response.stored_filename);
-          this.uploadStatus.set('uploaded');
+          
+          // 2. Trigger the local parsing endpoint on success
+          this.pdfService.processPdf(response.stored_filename).subscribe({
+            next: (procResponse) => {
+              if (procResponse.status === 'success') {
+                this.pageCount.set(procResponse.pages);
+                this.wordCount.set(procResponse.wordCount);
+                this.textPreview.set(procResponse.preview);
+                this.uploadStatus.set('uploaded');
+              } else {
+                this.errorMessage.set(procResponse.message || 'An error occurred during text extraction.');
+                this.uploadStatus.set('error');
+              }
+            },
+            error: (procErr) => {
+              console.error('File processing failed:', procErr);
+              const procServerError = procErr.error?.message || 'Processing failed. Please check the backend console.';
+              this.errorMessage.set(procServerError);
+              this.uploadStatus.set('error');
+            }
+          });
         } else {
           this.errorMessage.set(response.message || 'An error occurred during file upload.');
           this.uploadStatus.set('error');
@@ -96,7 +122,7 @@ export class UploadComponent {
   }
 
   /**
-   * Resets the component state to allow uploading another file.
+   * Resets all component state parameters to allow uploading another file.
    */
   resetUpload(): void {
     this.uploadStatus.set('idle');
@@ -104,5 +130,9 @@ export class UploadComponent {
     this.originalFilename.set('');
     this.storedFilename.set('');
     this.errorMessage.set('');
+    this.pageCount.set(null);
+    this.wordCount.set(null);
+    this.textPreview.set('');
   }
+
 }
