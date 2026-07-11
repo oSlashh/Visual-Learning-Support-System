@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { PdfService } from '../../services/pdf.service';
+import { DocumentData } from '../../models/document-data.interface';
 
 @Component({
   selector: 'app-upload',
@@ -8,19 +9,19 @@ import { PdfService } from '../../services/pdf.service';
   styleUrl: './upload.component.scss'
 })
 export class UploadComponent {
-  // Define upload lifecycle signals
-  uploadStatus = signal<'idle' | 'selected' | 'uploading' | 'uploaded' | 'error'>('idle');
+  // Define processing lifecycle states
+  processingState = signal<'idle' | 'selected' | 'uploading' | 'uploaded' | 'preprocessing' | 'preprocessed' | 'error'>('idle');
   selectedFile = signal<File | null>(null);
-  originalFilename = signal<string>('');
-  storedFilename = signal<string>('');
   errorMessage = signal<string>('');
 
-  // Document extraction metrics signals
-  pageCount = signal<number | null>(null);
-  wordCount = signal<number | null>(null);
-  textPreview = signal<string>('');
+  // Encapsulated document data model signal
+  documentData = signal<DocumentData | null>(null);
+
+  // Dynamic user-friendly progress loading message
+  nlpLoadingMessage = signal<string>('Generating study material...');
 
   constructor(private pdfService: PdfService) {}
+
 
   /**
    * Triggered when a file is selected via the traditional file picker.
@@ -60,63 +61,133 @@ export class UploadComponent {
     
     if (!isPdf) {
       this.errorMessage.set('Invalid file format. Only PDF documents are allowed.');
-      this.uploadStatus.set('error');
+      this.processingState.set('error');
       this.selectedFile.set(null);
       return;
     }
 
     this.selectedFile.set(file);
-    this.originalFilename.set(file.name);
-    this.uploadStatus.set('selected');
+    this.documentData.set({
+      originalFilename: file.name,
+      storedFilename: '',
+      pages: null,
+      wordCount: null,
+      preview: ''
+    });
+    this.processingState.set('selected');
     this.errorMessage.set('');
   }
 
   /**
-   * Triggers the file upload and sequential text extraction processing.
+   * Triggers the file upload and text extraction sequentially.
    */
   uploadFile(): void {
     const file = this.selectedFile();
     if (!file) return;
 
-    this.uploadStatus.set('uploading');
+    this.processingState.set('uploading');
 
     // 1. Submit file to Flask Upload endpoint
     this.pdfService.uploadPdf(file).subscribe({
       next: (response) => {
         if (response.status === 'success') {
-          this.originalFilename.set(response.original_filename);
-          this.storedFilename.set(response.stored_filename);
+          this.documentData.set({
+            originalFilename: response.original_filename,
+            storedFilename: response.stored_filename,
+            pages: null,
+            wordCount: null,
+            preview: ''
+          });
           
-          // 2. Trigger the local parsing endpoint on success
+          // 2. Trigger the local parsing endpoint immediately on success
           this.pdfService.processPdf(response.stored_filename).subscribe({
             next: (procResponse) => {
               if (procResponse.status === 'success') {
-                this.pageCount.set(procResponse.pages);
-                this.wordCount.set(procResponse.wordCount);
-                this.textPreview.set(procResponse.preview);
-                this.uploadStatus.set('uploaded');
+                const current = this.documentData();
+                if (current) {
+                  this.documentData.set({
+                    ...current,
+                    pages: procResponse.pages,
+                    wordCount: procResponse.wordCount,
+                    preview: procResponse.preview
+                  });
+                }
+                this.processingState.set('uploaded');
               } else {
                 this.errorMessage.set(procResponse.message || 'An error occurred during text extraction.');
-                this.uploadStatus.set('error');
+                this.processingState.set('error');
               }
             },
             error: (procErr) => {
               console.error('File processing failed:', procErr);
               const procServerError = procErr.error?.message || 'Processing failed. Please check the backend console.';
               this.errorMessage.set(procServerError);
-              this.uploadStatus.set('error');
+              this.processingState.set('error');
             }
           });
         } else {
           this.errorMessage.set(response.message || 'An error occurred during file upload.');
-          this.uploadStatus.set('error');
+          this.processingState.set('error');
         }
       },
       error: (err) => {
         console.error('File upload failed:', err);
         const serverError = err.error?.message || 'Backend connection failed. Please ensure the Flask server is running.';
         this.errorMessage.set(serverError);
-        this.uploadStatus.set('error');
+        this.processingState.set('error');
+      }
+    });
+  }
+
+  /**
+   * Invokes the text cleaning/preprocessing NLP pipeline.
+   */
+  analyzeDocument(): void {
+    const currentData = this.documentData();
+    if (!currentData || !currentData.storedFilename) return;
+
+    this.processingState.set('preprocessing');
+    this.nlpLoadingMessage.set('Generating study material...');
+
+    // Dynamic cycling of progress messages
+    const loadingMessages = [
+      'Generating study material...',
+      'Finding meaningful words...',
+      'Preparing your notes...'
+    ];
+    let msgIndex = 0;
+    
+    const messageInterval = setInterval(() => {
+      msgIndex = (msgIndex + 1) % loadingMessages.length;
+      this.nlpLoadingMessage.set(loadingMessages[msgIndex]);
+    }, 1500);
+
+    // Call the preprocessing API
+    this.pdfService.preprocessText(currentData.storedFilename).subscribe({
+      next: (response) => {
+        clearInterval(messageInterval);
+        if (response.status === 'success') {
+          const current = this.documentData();
+          if (current) {
+            this.documentData.set({
+              ...current,
+              totalWords: response.totalWords,
+              meaningfulWords: response.meaningfulWords,
+              removedStopwords: response.removedStopwords
+            });
+          }
+          this.processingState.set('preprocessed');
+        } else {
+          this.errorMessage.set(response.message || 'An error occurred during text cleaning.');
+          this.processingState.set('error');
+        }
+      },
+      error: (err) => {
+        clearInterval(messageInterval);
+        console.error('Document analysis failed:', err);
+        const serverError = err.error?.message || 'NLP analysis failed. Please verify connection.';
+        this.errorMessage.set(serverError);
+        this.processingState.set('error');
       }
     });
   }
@@ -125,14 +196,11 @@ export class UploadComponent {
    * Resets all component state parameters to allow uploading another file.
    */
   resetUpload(): void {
-    this.uploadStatus.set('idle');
+    this.processingState.set('idle');
     this.selectedFile.set(null);
-    this.originalFilename.set('');
-    this.storedFilename.set('');
     this.errorMessage.set('');
-    this.pageCount.set(null);
-    this.wordCount.set(null);
-    this.textPreview.set('');
+    this.documentData.set(null);
+    this.nlpLoadingMessage.set('Generating study material...');
   }
 
 }

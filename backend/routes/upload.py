@@ -128,4 +128,47 @@ def process_pdf():
             "message": f"An error occurred during processing: {str(e)}"
         }), 500
 
+@upload_bp.route('/preprocess', methods=['POST'])
+def preprocess_pdf():
+    """
+    Triggers NLTK preprocessing on the cached raw text of the document.
+    Saves JSON tokens to cache/ and returns token count metrics.
+    """
+    data = request.get_json()
+    if not data or 'stored_filename' not in data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'stored_filename' in the request payload."
+        }), 400
+        
+    stored_filename = data['stored_filename']
+    
+    try:
+        from modules.nlp_processor import preprocess_text_cache
+        result = preprocess_text_cache(stored_filename)
+        
+        return jsonify({
+            "status": "success",
+            "totalWords": result["totalWords"],
+            "meaningfulWords": result["meaningfulWords"],
+            "removedStopwords": result["removedStopwords"]
+        }), 200
+        
+    except FileNotFoundError as fnf_err:
+        return jsonify({
+            "status": "error",
+            "message": str(fnf_err)
+        }), 404
+    except ValueError as val_err:
+        return jsonify({
+            "status": "error",
+            "message": str(val_err)
+        }), 400
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to preprocess document: {str(e)}"
+        }), 500
+
+
 

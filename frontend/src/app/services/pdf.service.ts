@@ -35,5 +35,14 @@ export class PdfService {
       stored_filename: storedFilename
     });
   }
+
+  /**
+   * Triggers NLTK preprocessing on the cached raw text of the document.
+   */
+  preprocessText(storedFilename: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/preprocess`, {
+      stored_filename: storedFilename
+    });
+  }
 }
 
