@@ -1,0 +1,9 @@
+<div class="loading-panel">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+  </div>
+  <p class="status-message">{{ message }}</p>
+  @if (subtext) {
+    <span class="sub-text" [title]="subtext">{{ subtext }}</span>
+  }
+</div>

@@ -1,54 +1,45 @@
 .upload-card {
-  width: 100%;
-  max-width: 440px;
+  width: min(90vw, 600px);
   background-color: #2b2d31;
   border: 1px solid #3b3d44;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  padding: 24px;
   box-sizing: border-box;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   margin: 0 auto;
 }
 
-// Dropzone styling (IDLE)
+// Drag & Drop Zone Area
 .dropzone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   border: 2px dashed #3b3d44;
   border-radius: 8px;
   padding: 40px 20px;
   cursor: pointer;
   background-color: rgba(32, 33, 35, 0.2);
-  transition: all 0.2s ease-in-out;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   
   &:hover {
     border-color: #10a37f;
     background-color: rgba(16, 163, 127, 0.02);
-    
-    .upload-icon {
-      color: #10a37f;
-      transform: translateY(-2px);
-    }
   }
 }
 
 .upload-icon {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   color: #A0A0A0;
-  margin-bottom: 16px;
-  transition: all 0.2s ease;
+  margin-bottom: 12px;
 }
 
 .dropzone-text {
   font-size: 13px;
-  font-weight: 500;
   color: #ECECEC;
   margin: 0 0 6px 0;
-  text-align: center;
-  line-height: 1.5;
+  font-weight: 500;
 }
 
 .browse-link {
@@ -57,199 +48,86 @@
 }
 
 .file-spec {
-  font-size: 10px;
+  font-size: 11px;
   color: #A0A0A0;
 }
 
-// Selected State
-.selected-state {
+// Active Dashboard Container
+.workspace-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 4px 0;
-}
-
-.file-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: 24px;
   width: 100%;
-  padding: 16px;
-  background-color: rgba(32, 33, 35, 0.4);
-  border: 1px solid #3b3d44;
-  border-radius: 8px;
-  margin-bottom: 24px;
   box-sizing: border-box;
 }
 
-.pdf-icon {
-  width: 20px;
-  height: 20px;
-  color: #10a37f;
-  flex-shrink: 0;
-}
-
-.file-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: #ECECEC;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
+// Action Buttons Layout
 .btn-group {
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: 100%;
+  margin-top: 12px;
+  box-sizing: border-box;
 }
 
 .btn-primary {
-  width: 100%;
-  padding: 12px 20px;
   background-color: #10a37f;
+  color: #ffffff;
   border: none;
-  border-radius: 8px;
-  color: white;
+  border-radius: 6px;
+  padding: 10px 16px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   
-  &:hover {
-    background-color: #1a7f66;
+  &:hover:not([disabled]) {
+    background-color: #158b6d;
+    box-shadow: 0 4px 12px rgba(16, 163, 127, 0.2);
+  }
+  
+  &:active:not([disabled]) {
+    transform: translateY(0.5px);
+  }
+  
+  &[disabled] {
+    background-color: rgba(59, 61, 68, 0.4);
+    color: rgba(236, 236, 236, 0.3);
+    cursor: not-allowed;
+    box-shadow: none;
   }
 }
 
 .btn-secondary {
-  width: 100%;
-  padding: 12px 20px;
   background-color: transparent;
+  color: #A0A0A0;
   border: 1px solid #3b3d44;
-  border-radius: 8px;
-  color: #ECECEC;
+  border-radius: 6px;
+  padding: 9px 16px;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  box-sizing: border-box;
   
   &:hover {
-    background-color: #3b3d44;
+    color: #ECECEC;
     border-color: #ECECEC;
+    background-color: rgba(236, 236, 236, 0.03);
   }
 }
 
-// Uploading State
-.uploading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
-}
-
-.spinner-container {
-  margin-bottom: 16px;
-}
-
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(16, 163, 127, 0.15);
-  border-radius: 50%;
-  border-top-color: #10a37f;
-  animation: spin 1s ease-in-out infinite;
-}
-
-.status-message {
-  font-size: 13px;
-  font-weight: 500;
-  color: #ECECEC;
-  margin: 0 0 6px 0;
-}
-
-.sub-text {
-  color: #A0A0A0;
-  font-size: 11px;
-  text-align: center;
-  max-width: 85%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-// Uploaded / Success State
-.uploaded-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.success-icon-container {
-  color: #10a37f;
-  margin-bottom: 16px;
-}
-
-.success-icon {
-  width: 40px;
-  height: 40px;
-}
-
-.success-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #ECECEC;
-  margin: 0 0 20px 0;
-}
-
-.success-details {
-  width: 100%;
-  background-color: rgba(32, 33, 35, 0.4);
-  border: 1px solid #3b3d44;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-  box-sizing: border-box;
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  font-size: 11px;
-  
-  &:not(:last-child) {
-    border-bottom: 1px solid rgba(59, 61, 68, 0.4);
-  }
-}
-
-.detail-label {
-  color: #A0A0A0;
-  font-weight: 500;
-}
-
-.detail-value {
-  color: #ECECEC;
-  font-weight: 600;
-  max-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  
-  &.stored-name {
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 10px;
-    color: #A0A0A0;
-  }
-}
-
-// Error State
+// Error Panel View
 .error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-sizing: border-box;
 }
 
 .error-icon-container {
@@ -263,268 +141,17 @@
 }
 
 .error-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #ECECEC;
   margin: 0 0 8px 0;
 }
 
 .error-message {
-  font-size: 12px;
+  font-size: 11px;
   color: #A0A0A0;
   text-align: center;
   margin: 0 0 24px 0;
   line-height: 1.5;
   max-width: 90%;
 }
-
-// Document Preview Box
-.preview-container {
-  width: 100%;
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.preview-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #A0A0A0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.preview-box {
-  position: relative;
-  height: 100px;
-  background-color: #202123;
-  border: 1px solid #3b3d44;
-  border-radius: 8px;
-  padding: 12px 14px;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-.preview-text {
-  margin: 0;
-  font-size: 11px;
-  color: #ECECEC;
-  line-height: 1.5;
-  font-style: italic;
-  white-space: pre-wrap;
-}
-
-.preview-fade {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 24px;
-  background: linear-gradient(to top, #202123, transparent);
-  pointer-events: none;
-}
-
-// Processing Pipeline Indicators
-.pipeline-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-  margin-bottom: 24px;
-  border-top: 1px solid rgba(59, 61, 68, 0.4);
-  padding-top: 16px;
-  text-align: left;
-}
-
-.pipeline-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: #A0A0A0;
-  
-  &.done {
-    color: #ECECEC;
-    
-    .bullet {
-      color: #10a37f;
-      font-weight: 700;
-    }
-  }
-  
-  &.ready {
-    color: #10a37f;
-    font-weight: 600;
-  }
-}
-
-.bullet {
-  font-size: 11px;
-  display: inline-block;
-  width: 12px;
-}
-
-.pulse-bullet {
-  width: 6px;
-  height: 6px;
-  background-color: #10a37f;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 6px #10a37f;
-  margin-left: 3px;
-  margin-right: 3px;
-  animation: pulse 1.5s infinite ease-in-out;
-}
-
-.btn-analyze {
-  margin-bottom: 2px;
-}
-
-// Discovered Concepts Chips Grid
-.concepts-container {
-  width: 100%;
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.concepts-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #A0A0A0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
-  display: block;
-}
-
-.concepts-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: flex-start;
-}
-
-.concept-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background-color: rgba(32, 33, 35, 0.4);
-  border: 1px solid #3b3d44;
-  border-radius: 16px;
-  padding: 6px 12px;
-  font-size: 11px;
-  color: #ECECEC;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-  
-  &:hover {
-    border-color: #10a37f;
-    transform: translateY(-1.5px);
-    background-color: rgba(16, 163, 127, 0.05);
-    box-shadow: 0 4px 12px rgba(16, 163, 127, 0.15);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-.concept-text {
-  font-weight: 500;
-}
-
-.concept-score {
-  font-size: 9px;
-  font-weight: 700;
-  color: #10a37f;
-  background-color: rgba(16, 163, 127, 0.12);
-  border-radius: 8px;
-  padding: 1px 5px;
-  line-height: 1;
-}
-
-// Progressive Study Summary Section
-.summary-container {
-  width: 100%;
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.summary-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #A0A0A0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 12px;
-  display: block;
-}
-
-.overview-box {
-  background-color: rgba(32, 33, 35, 0.4);
-  border: 1px solid #3b3d44;
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-  box-sizing: border-box;
-}
-
-.overview-text {
-  margin: 0;
-  font-size: 12px;
-  color: #ECECEC;
-  line-height: 1.6;
-}
-
-.section-title {
-  font-size: 9px;
-  font-weight: 700;
-  color: #10a37f;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.keypoints-box {
-  background-color: rgba(32, 33, 35, 0.4);
-  border: 1px solid #3b3d44;
-  border-radius: 8px;
-  padding: 14px 16px;
-  box-sizing: border-box;
-}
-
-.keypoints-list {
-  margin: 0;
-  padding-left: 12px;
-  list-style-type: none;
-}
-
-.keypoint-item {
-  font-size: 12px;
-  color: #ECECEC;
-  line-height: 1.6;
-  position: relative;
-  margin-bottom: 8px;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
-  
-  &::before {
-    content: "•";
-    position: absolute;
-    left: -12px;
-    color: #10a37f;
-    font-weight: 700;
-  }
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-
-

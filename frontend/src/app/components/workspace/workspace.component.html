@@ -1,0 +1,90 @@
+<div class="workspace-wrapper">
+  <!-- Rich Uploaded File Component -->
+  @if (file) {
+    <div class="file-card">
+      <div class="file-card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="pdf-icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+        </svg>
+      </div>
+      <div class="file-card-details">
+        <span class="file-card-name" [title]="file.name">{{ file.name }}</span>
+        <span class="file-card-meta">
+          @if (data && data.pages !== null && data.pages !== undefined) {
+            {{ data.pages }} {{ data.pages === 1 ? 'page' : 'pages' }} &bull; {{ data.wordCount }} words
+          } @else {
+            {{ (file.size / 1024 / 1024) | number:'1.1-2' }} MB
+          }
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Progressive Section: Document Preview Box -->
+  @if (data && data.preview) {
+    <div class="workspace-section fade-in">
+      <span class="section-label">Document Preview</span>
+      <div class="preview-box">
+        <p class="preview-text">{{ data.preview }}</p>
+        <div class="preview-fade"></div>
+      </div>
+    </div>
+  }
+
+  <!-- Progressive Section: Processing Statistics -->
+  @if (data && data.totalWords !== undefined && data.totalWords !== null) {
+    <div class="workspace-section fade-in">
+      <span class="section-label">Text Cleaning Statistics</span>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-value">{{ data.totalWords }}</span>
+          <span class="stat-label">Original Words</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ data.meaningfulWords }}</span>
+          <span class="stat-label">Meaningful Words</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ data.removedStopwords }}</span>
+          <span class="stat-label">Stopwords Filtered</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Progressive Section: Important Study Concepts Chips Grid -->
+  @if (data && data.concepts && data.concepts.length > 0) {
+    <div class="workspace-section fade-in">
+      <span class="section-label">Study Concepts Identified</span>
+      <div class="concepts-grid">
+        @for (concept of data.concepts; track concept.text) {
+          <div class="concept-chip" [title]="'Frequency: ' + concept.frequency + ' | Importance: ' + concept.importance">
+            <span class="concept-text">{{ concept.text }}</span>
+            <span class="concept-score">{{ concept.importance }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Progressive Section: Study Summary revision card -->
+  @if (data && data.summary) {
+    <div class="workspace-section fade-in">
+      <span class="section-label">Study Summary</span>
+      
+      <div class="overview-box">
+        <span class="subsection-title">Overview</span>
+        <p class="overview-text">{{ data.summary.overview }}</p>
+      </div>
+      
+      <div class="keypoints-box">
+        <span class="subsection-title">Key Revision Points</span>
+        <ul class="keypoints-list">
+          @for (point of data.summary.keyPoints; track point) {
+            <li class="keypoint-item">{{ point }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+  }
+</div>
