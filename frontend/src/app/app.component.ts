@@ -1,13 +1,15 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { PdfService } from './services/pdf.service';
+import { HomeComponent } from './components/home/home.component';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [HomeComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class App implements OnInit {
+
   status = signal<'connecting' | 'connected' | 'error'>('connecting');
   serviceName = signal<string>('');
   version = signal<string>('');
