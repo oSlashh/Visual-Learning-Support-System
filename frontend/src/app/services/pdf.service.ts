@@ -20,11 +20,20 @@ export class PdfService {
 
   /**
    * Uploads a PDF file to the backend for note generation.
-   * Placeholder for Phase 2 implementation.
    */
   uploadPdf(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('pdf', file);
     return this.http.post<any>(`${this.apiUrl}/upload`, formData);
   }
+
+  /**
+   * Triggers text extraction and metadata processing on the backend.
+   */
+  processPdf(storedFilename: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/process`, {
+      stored_filename: storedFilename
+    });
+  }
 }
+

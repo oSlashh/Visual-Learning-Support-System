@@ -85,3 +85,47 @@ def upload_pdf():
             "message": f"Failed to save file: {str(e)}"
         }), 500
 
+@upload_bp.route('/process', methods=['POST'])
+def process_pdf():
+    """
+    Locates the uploaded PDF using stored_filename, extracts text page-by-page,
+    counts pages/words, generates a 500-character preview, and caches text locally.
+    """
+    data = request.get_json()
+    if not data or 'stored_filename' not in data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing 'stored_filename' in the request payload."
+        }), 400
+        
+    stored_filename = data['stored_filename']
+    filepath = os.path.join(UPLOAD_INCOMING_DIR, stored_filename)
+    
+    try:
+        from modules.document_processor import extract_pdf_text
+        result = extract_pdf_text(filepath)
+        
+        return jsonify({
+            "status": "success",
+            "pages": result["pages"],
+            "wordCount": result["wordCount"],
+            "preview": result["preview"]
+        }), 200
+        
+    except FileNotFoundError:
+        return jsonify({
+            "status": "error",
+            "message": "The requested document could not be found on the server."
+        }), 404
+    except ValueError as val_err:
+        return jsonify({
+            "status": "error",
+            "message": str(val_err)
+        }), 400
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An error occurred during processing: {str(e)}"
+        }), 500
+
+
