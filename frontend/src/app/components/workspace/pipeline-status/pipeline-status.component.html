@@ -1,0 +1,14 @@
+<div class="pipeline-section">
+  @for (step of steps; track step.label) {
+    <div class="pipeline-item" [class.done]="step.completed" [class.active]="step.active">
+      @if (step.completed) {
+        <span class="bullet done-bullet">✓</span>
+      } @else if (step.active) {
+        <span class="pulse-bullet"></span>
+      } @else {
+        <span class="bullet pending-bullet">○</span>
+      }
+      <span class="step-label">{{ step.label }}</span>
+    </div>
+  }
+</div>

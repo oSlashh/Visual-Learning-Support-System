@@ -1,10 +1,21 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { PdfService } from '../../services/pdf.service';
 import { DocumentData } from '../../models/document-data.interface';
+import { PipelineStep } from '../../models/pipeline-step.interface';
+import { WorkspaceComponent } from '../workspace/workspace.component';
+import { PipelineStatusComponent } from '../workspace/pipeline-status/pipeline-status.component';
+import { LoadingPanelComponent } from '../shared/loading-panel/loading-panel.component';
 
 @Component({
   selector: 'app-upload',
-  imports: [],
+  standalone: true,
+  imports: [
+    CommonModule, 
+    WorkspaceComponent, 
+    PipelineStatusComponent, 
+    LoadingPanelComponent
+  ],
   templateUrl: './upload.component.html',
   styleUrl: './upload.component.scss'
 })
@@ -22,6 +33,47 @@ export class UploadComponent {
 
   constructor(private pdfService: PdfService) {}
 
+  /**
+   * Data-driven timeline step compiler based on current processing state.
+   */
+  pipelineSteps = computed<PipelineStep[]>(() => {
+    const state = this.processingState();
+    
+    // Determine completed flag for each step
+    const step1_done = state !== 'idle' && state !== 'selected' && state !== 'uploading' && state !== 'error';
+    const step2_done = step1_done; // Upload + extraction are chained sequentially
+    const step3_done = state === 'preprocessed' || state === 'extracting-concepts' || state === 'concepts-discovered' || state === 'generating-summary' || state === 'summary-generated';
+    const step4_done = state === 'concepts-discovered' || state === 'generating-summary' || state === 'summary-generated';
+    const step5_done = state === 'summary-generated';
+    
+    return [
+      {
+        label: 'Document Uploaded',
+        completed: step1_done,
+        active: state === 'uploading'
+      },
+      {
+        label: 'Text Extracted',
+        completed: step2_done,
+        active: false
+      },
+      {
+        label: 'Text Preprocessed',
+        completed: step3_done,
+        active: state === 'preprocessing'
+      },
+      {
+        label: 'Important Concepts Identified',
+        completed: step4_done,
+        active: state === 'extracting-concepts'
+      },
+      {
+        label: 'Study Summary Generated',
+        completed: step5_done,
+        active: state === 'generating-summary'
+      }
+    ];
+  });
 
   /**
    * Triggered when a file is selected via the traditional file picker.
@@ -56,7 +108,6 @@ export class UploadComponent {
    * Validates that the file is a PDF and updates signals accordingly.
    */
   private handleFile(file: File): void {
-    // Check MIME type or file extension
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
     
     if (!isPdf) {
@@ -307,5 +358,4 @@ export class UploadComponent {
     this.documentData.set(null);
     this.nlpLoadingMessage.set('Generating study material...');
   }
-
 }
